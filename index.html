@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BrowserOS</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="apps.css">
+</head>
+<body>
+
+<!-- Boot screen -->
+<div id="boot-screen">
+  <div class="boot-logo">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+      <rect x="1" y="1" width="10" height="10" fill="#00adef"/>
+      <rect x="13" y="1" width="10" height="10" fill="#00adef"/>
+      <rect x="1" y="13" width="10" height="10" fill="#00adef"/>
+      <rect x="13" y="13" width="10" height="10" fill="#00adef"/>
+    </svg>
+  </div>
+  <div class="boot-spinner"></div>
+</div>
+
+<!-- Lock screen -->
+<div id="lock-screen">
+  <div id="lock-time"></div>
+  <div id="lock-date"></div>
+  <div class="lock-hint">Click anywhere or press a key to sign in</div>
+</div>
+
+<!-- Desktop -->
+<div id="desktop">
+  <div id="desktop-icons"></div>
+  <div id="windows-layer"></div>
+</div>
+
+<!-- Notifications (Action Center toasts) -->
+<div id="toast-stack"></div>
+
+<!-- Custom context menu -->
+<div id="context-menu" class="context-menu hidden"></div>
+
+<!-- Custom dialog (replaces native confirm/prompt/alert) -->
+<div id="dialog-overlay" class="dialog-overlay hidden">
+  <div class="dialog-box">
+    <div class="dialog-icon" id="dialog-icon">❓</div>
+    <div class="dialog-title" id="dialog-title">BrowserOS</div>
+    <div class="dialog-message" id="dialog-message"></div>
+    <input type="text" id="dialog-input" class="dialog-input hidden" autocomplete="off">
+    <div class="dialog-actions" id="dialog-actions"></div>
+  </div>
+</div>
+
+<!-- Start Menu -->
+<div id="start-menu" class="hidden">
+  <div class="start-search">
+    <span class="icon">🔍</span>
+    <input type="text" id="start-search-input" placeholder="Type here to search">
+  </div>
+  <div class="start-body">
+    <div class="start-section-label">Apps</div>
+    <div id="start-apps-grid" class="start-apps-grid"></div>
+  </div>
+  <div class="start-footer">
+    <div class="start-user">🙂 User</div>
+    <div class="start-power" id="power-btn" title="Power">⏻</div>
+  </div>
+</div>
+
+<!-- Action Center (Notifications panel) -->
+<div id="action-center" class="hidden">
+  <div class="ac-header">
+    <span>Notifications</span>
+    <button id="clear-notifications">Clear all</button>
+  </div>
+  <div id="ac-list"></div>
+  <div class="ac-quick-actions">
+    <div class="quick-tile active" id="qt-theme">🌙<span>Theme</span></div>
+    <div class="quick-tile" id="qt-search-focus">🔍<span>Search</span></div>
+    <div class="quick-tile" id="qt-settings">⚙️<span>Settings</span></div>
+    <div class="quick-tile" id="qt-terminal">💻<span>Terminal</span></div>
+  </div>
+  <div class="ac-volume-row">
+    <span>🔊</span>
+    <input type="range" id="ac-volume-slider" min="0" max="100" value="70">
+    <span id="ac-volume-value">70</span>
+  </div>
+</div>
+
+<!-- Volume popup -->
+<div id="volume-popup" class="hidden">
+  <div class="vol-label">Volume</div>
+  <input type="range" id="volume-slider" min="0" max="100" value="70" orient="vertical">
+  <div class="vol-value" id="volume-value">70</div>
+</div>
+
+<!-- Taskbar -->
+<div id="taskbar">
+  <div id="start-btn" class="taskbar-btn" title="Start">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <rect x="1" y="1" width="10" height="10" fill="currentColor"/>
+      <rect x="13" y="1" width="10" height="10" fill="currentColor"/>
+      <rect x="1" y="13" width="10" height="10" fill="currentColor"/>
+      <rect x="13" y="13" width="10" height="10" fill="currentColor"/>
+    </svg>
+  </div>
+  <div id="taskbar-search" class="taskbar-search">
+    <span class="icon">🔍</span>
+    <input type="text" id="taskbar-search-input" placeholder="Type here to search">
+  </div>
+  <div id="taskbar-apps"></div>
+  <div id="tray">
+    <span id="tray-volume" class="tray-icon" title="Volume (double-click to mute)">🔊</span>
+    <span id="tray-notif" class="tray-icon" title="Notifications">🔔<span id="notif-dot" class="notif-dot hidden"></span></span>
+    <div id="tray-clock">
+      <div id="clock-time"></div>
+      <div id="clock-date"></div>
+    </div>
+  </div>
+</div>
+
+<!-- App templates -->
+<template id="tpl-filemanager">
+  <div class="app-filemanager">
+    <div class="fm-toolbar">
+      <button class="fm-nav-btn" data-fm-back title="Back">←</button>
+      <button class="fm-nav-btn" data-fm-up title="Up">↑</button>
+      <div class="fm-path"></div>
+      <button class="fm-new-folder" title="New folder">📁+</button>
+      <button class="fm-new-file" title="New note file">📄+</button>
+    </div>
+    <div class="fm-body">
+      <div class="fm-sidebar">
+        <div class="fm-sidebar-item" data-goto="Desktop">🖥️ Desktop</div>
+        <div class="fm-sidebar-item" data-goto="Documents">📁 Documents</div>
+        <div class="fm-sidebar-item" data-goto="Pictures">🖼️ Pictures</div>
+        <div class="fm-sidebar-item" data-goto="Downloads">⬇️ Downloads</div>
+        <div class="fm-sidebar-item" data-goto="This PC">💻 This PC</div>
+      </div>
+      <div class="fm-grid"></div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-notes">
+  <div class="app-notes">
+    <div class="notes-sidebar">
+      <button class="notes-new-btn">+ New note</button>
+      <div class="notes-list"></div>
+    </div>
+    <div class="notes-editor">
+      <input type="text" class="notes-title-input" placeholder="Note title">
+      <textarea class="notes-body-input" placeholder="Start typing..."></textarea>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-calculator">
+  <div class="app-calculator">
+    <div class="calc-display">
+      <div class="calc-expression"></div>
+      <div class="calc-result">0</div>
+    </div>
+    <div class="calc-buttons">
+      <button data-calc="clear" class="calc-btn calc-fn">C</button>
+      <button data-calc="negate" class="calc-btn calc-fn">±</button>
+      <button data-calc="percent" class="calc-btn calc-fn">%</button>
+      <button data-calc="op" data-op="÷" class="calc-btn calc-op">÷</button>
+
+      <button data-calc="num" data-num="7" class="calc-btn">7</button>
+      <button data-calc="num" data-num="8" class="calc-btn">8</button>
+      <button data-calc="num" data-num="9" class="calc-btn">9</button>
+      <button data-calc="op" data-op="×" class="calc-btn calc-op">×</button>
+
+      <button data-calc="num" data-num="4" class="calc-btn">4</button>
+      <button data-calc="num" data-num="5" class="calc-btn">5</button>
+      <button data-calc="num" data-num="6" class="calc-btn">6</button>
+      <button data-calc="op" data-op="−" class="calc-btn calc-op">−</button>
+
+      <button data-calc="num" data-num="1" class="calc-btn">1</button>
+      <button data-calc="num" data-num="2" class="calc-btn">2</button>
+      <button data-calc="num" data-num="3" class="calc-btn">3</button>
+      <button data-calc="op" data-op="+" class="calc-btn calc-op">+</button>
+
+      <button data-calc="num" data-num="0" class="calc-btn calc-zero">0</button>
+      <button data-calc="decimal" class="calc-btn">.</button>
+      <button data-calc="equals" class="calc-btn calc-equals">=</button>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-terminal">
+  <div class="app-terminal">
+    <div class="terminal-output"></div>
+    <div class="terminal-input-row">
+      <span class="terminal-prompt">C:\Users\User&gt;</span>
+      <input type="text" class="terminal-input" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+</template>
+
+<template id="tpl-settings">
+  <div class="app-settings">
+    <div class="settings-sidebar">
+      <div class="settings-nav-item active" data-panel="personalization">🎨 Personalization</div>
+      <div class="settings-nav-item" data-panel="sound">🔊 Sound</div>
+      <div class="settings-nav-item" data-panel="apps">🧩 Apps</div>
+      <div class="settings-nav-item" data-panel="about">ℹ️ About</div>
+    </div>
+    <div class="settings-content">
+      <div class="settings-panel" data-panel="personalization">
+        <h2>Personalization</h2>
+        <div class="settings-group">
+          <label>Theme</label>
+          <div class="theme-options">
+            <button class="theme-swatch" data-theme="light">☀️ Light</button>
+            <button class="theme-swatch" data-theme="dark">🌙 Dark</button>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label>Accent color</label>
+          <div class="accent-options">
+            <button class="accent-swatch" style="background:#0078d7" data-accent="#0078d7"></button>
+            <button class="accent-swatch" style="background:#e74856" data-accent="#e74856"></button>
+            <button class="accent-swatch" style="background:#0f7b0f" data-accent="#0f7b0f"></button>
+            <button class="accent-swatch" style="background:#ff8c00" data-accent="#ff8c00"></button>
+            <button class="accent-swatch" style="background:#881798" data-accent="#881798"></button>
+            <button class="accent-swatch" style="background:#00b7c3" data-accent="#00b7c3"></button>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label>Background</label>
+          <div class="wallpaper-options">
+            <button class="wallpaper-swatch" data-wallpaper="wp1"></button>
+            <button class="wallpaper-swatch" data-wallpaper="wp2"></button>
+            <button class="wallpaper-swatch" data-wallpaper="wp3"></button>
+            <button class="wallpaper-swatch" data-wallpaper="wp4"></button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-panel hidden" data-panel="sound">
+        <h2>Sound</h2>
+        <div class="settings-group">
+          <label>Master volume</label>
+          <input type="range" id="settings-volume-slider" min="0" max="100" value="70">
+        </div>
+        <div class="settings-group">
+          <label>UI sound effects</label>
+          <label class="switch">
+            <input type="checkbox" id="settings-sound-toggle" checked>
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="settings-panel hidden" data-panel="apps">
+        <h2>Apps</h2>
+        <p class="settings-desc">Pinned apps appear on the taskbar and in Start.</p>
+        <div id="settings-apps-list"></div>
+      </div>
+      <div class="settings-panel hidden" data-panel="about">
+        <h2>About BrowserOS</h2>
+        <div class="about-box">
+          <div class="about-logo">🪟</div>
+          <h3>BrowserOS</h3>
+          <p>A fake operating system that runs entirely in your browser.</p>
+          <button id="about-reset-btn" class="danger-btn">Reset all data</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-credits">
+  <div class="app-credits">
+    <div class="credits-logo">🪟</div>
+    <h2>BrowserOS</h2>
+    <p class="credits-tagline">A fake operating system that runs entirely in your browser.</p>
+    <a href="https://github.com/ahmedosama2013/browseros" target="_blank" rel="noopener noreferrer" class="github-btn">
+      <svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      View On Github
+    </a>
+    <p class="credits-made-by">Made By : ahmedosama2013b@gmail.com</p>
+  </div>
+</template>
+
+<template id="tpl-recyclebin">
+  <div class="app-recyclebin">
+    <div class="fm-toolbar">
+      <button class="fm-new-folder rb-restore-btn" title="Restore" disabled>↩️ Restore</button>
+      <button class="fm-new-folder rb-delete-btn" title="Delete permanently" disabled>🗑️ Delete</button>
+      <div class="fm-path rb-count">Recycle Bin is empty</div>
+      <button class="fm-new-file rb-empty-btn" title="Empty Recycle Bin" disabled>🧹 Empty</button>
+    </div>
+    <div class="fm-grid rb-grid"></div>
+  </div>
+</template>
+
+<script src="core.js"></script>
+<script src="apps.js"></script>
+</body>
+</html>
