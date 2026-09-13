@@ -1,4 +1,4 @@
-# 🪟 BrowserOS
+# BrowserOS
 
 **BrowserOS** is a fake operating system that runs entirely in your browser. It is a clean desktop, complete with windows, a taskbar, a file system, and a handful of built-in apps.
 
